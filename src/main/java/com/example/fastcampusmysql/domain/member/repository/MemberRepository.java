@@ -21,19 +21,20 @@ public class MemberRepository {
 
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    final static private String TABLE = "member";
+    static final private String TABLE = "Member";
+    static final RowMapper<Member> rowMapper = (ResultSet resultSet, int rowNum) -> Member.builder()
+            .id(resultSet.getLong("id"))
+            .email(resultSet.getString("email"))
+            .nickname(resultSet.getString("nickname"))
+            .birthDay(resultSet.getObject("birthDay", LocalDate.class))
+            .createdAt(resultSet.getObject("createdAt", LocalDateTime.class))
+            .build();
 
     public Optional<Member> findById(Long id) {
 
         var sql = String.format("SELECT * FROM %s where id = :id", TABLE);
-        var param = new MapSqlParameterSource().addValue("id", id);
-        RowMapper<Member> rowMapper = (ResultSet resultSet, int rowNum) -> Member.builder()
-                .id(resultSet.getLong("id"))
-                .email(resultSet.getString("email"))
-                .nickname(resultSet.getString("nickname"))
-                .birthDay(resultSet.getObject("birthDay", LocalDate.class))
-                .createdAt(resultSet.getObject("createdAt", LocalDateTime.class))
-                .build();
+        var param = new MapSqlParameterSource()
+                .addValue("id", id);
         var member = namedParameterJdbcTemplate.queryForObject(sql, param, rowMapper);
         return Optional.ofNullable(member);
 
@@ -51,7 +52,7 @@ public class MemberRepository {
 
     private Member insert(Member member) {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(namedParameterJdbcTemplate.getJdbcTemplate())
-                .withTableName("Member")
+                .withTableName(TABLE)
                 .usingGeneratedKeyColumns("id");
         SqlParameterSource params = new BeanPropertySqlParameterSource(member);
 
