@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 @RequiredArgsConstructor
 @Service
@@ -31,6 +31,16 @@ public class MemberReadService {
                 .toList();
 
     }
+
+    public List<MemberDto> getMembers(List<Long> ids) {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        var members = memberRepository.findAllByIdIn(ids);
+        return members.stream().map(this::toDto).toList();
+
+    }
+
 
     public MemberDto toDto(Member member) {
         return new MemberDto(member.getId(), member.getEmail(), member.getNickname(), member.getBirthDay());
