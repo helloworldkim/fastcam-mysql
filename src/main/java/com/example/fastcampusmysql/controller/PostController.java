@@ -1,5 +1,6 @@
 package com.example.fastcampusmysql.controller;
 
+import com.example.fastcampusmysql.application.usecase.GetTimelinePostsUsecase;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostCount;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostCountRequest;
 import com.example.fastcampusmysql.domain.post.dto.PostCommand;
@@ -23,6 +24,7 @@ public class PostController {
 
     private final PostWriteService postWriteService;
     private final PostReadService postReadService;
+    private final GetTimelinePostsUsecase getTimelinePostsUsecase;
 
     @PostMapping("")
     public Long register(PostCommand command) {
@@ -34,7 +36,7 @@ public class PostController {
         return postReadService.getDailyPostCounts(request);
     }
 
-    @GetMapping("members/{memberId}")
+    @GetMapping("/members/{memberId}")
     public Page<Post> getPosts(
             @PathVariable("memberId") Long memberId,
             Pageable pagable
@@ -43,12 +45,20 @@ public class PostController {
     }
 
 
-    @GetMapping("members/{memberId}/by-cursor")
+    @GetMapping("/members/{memberId}/by-cursor")
     public PageCuorsor<Post> getPostsByCursor(
             @PathVariable("memberId") Long memberId,
             CursorRequest cursorRequest
     ) {
         return postReadService.getPosts(memberId, cursorRequest);
+    }
+
+    @GetMapping("/members/{memberId}/timeline")
+    public PageCuorsor<Post> getTimeline(
+            @PathVariable("memberId") Long memberId,
+            CursorRequest cursorRequest
+    ) {
+        return getTimelinePostsUsecase.excute(memberId, cursorRequest);
     }
 
 }

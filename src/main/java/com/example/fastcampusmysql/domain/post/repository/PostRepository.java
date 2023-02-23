@@ -101,6 +101,25 @@ public class PostRepository {
         return namedParameterJdbcTemplate.query(sql, params, ROW_MAPPER);
     }
 
+    public List<Post> findAllByInMemberIdsAndOrderByIdDesc(List<Long> memberIds, int size) {
+        if (memberIds.isEmpty()) {
+            return List.of();
+        }
+
+        var params = new MapSqlParameterSource()
+                .addValue("memberIds", memberIds)
+                .addValue("size", size);
+        var sql = String.format("""
+                SELECT *
+                FROM %s
+                WHERE memberId in (:memberIds)
+                ORDER BY id DESC
+                LIMIT :size
+                """, TABLE);
+        var posts = namedParameterJdbcTemplate.query(sql, params, ROW_MAPPER);
+        return namedParameterJdbcTemplate.query(sql, params, ROW_MAPPER);
+    }
+
     public List<Post> findAllByLessThenIdAndMemberIdAndOrderByIdDesc(Long id, Long memberId, int size) {
         var params = new MapSqlParameterSource()
                 .addValue("memberId", memberId)
@@ -110,6 +129,26 @@ public class PostRepository {
                 SELECT *
                 FROM %s
                 WHERE memberId = :memberId and id < :id
+                ORDER BY id DESC
+                LIMIT :size
+                """, TABLE);
+        var posts = namedParameterJdbcTemplate.query(sql, params, ROW_MAPPER);
+        return namedParameterJdbcTemplate.query(sql, params, ROW_MAPPER);
+    }
+
+    public List<Post> findAllByLessThenIdAndInMemberIdsAndOrderByIdDesc(Long id, List<Long> memberIds, int size) {
+        if (memberIds.isEmpty()) {
+            return List.of();
+        }
+
+        var params = new MapSqlParameterSource()
+                .addValue("memberIds", memberIds)
+                .addValue("id", id)
+                .addValue("size", size);
+        var sql = String.format("""
+                SELECT *
+                FROM %s
+                WHERE memberId = :memberIds and id < :id
                 ORDER BY id DESC
                 LIMIT :size
                 """, TABLE);
