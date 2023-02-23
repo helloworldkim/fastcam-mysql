@@ -1,13 +1,18 @@
 package com.example.fastcampusmysql.domain.post.repository;
 
 
+import com.example.fastcampusmysql.util.PageCuorsor;
+import com.example.fastcampusmysql.util.PageHelper;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostCount;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostCountRequest;
 import com.example.fastcampusmysql.domain.post.entity.Post;
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -26,7 +31,14 @@ public class PostRepository {
 
     static final private String TABLE = "Post";
 
-    static final RowMapper<DailyPostCount> rowMapper = (ResultSet resultSet, int rowNum) ->
+    static final RowMapper<Post> ROW_MAPPER = (ResultSet resultSet, int rowNum) -> Post.builder()
+                .id(resultSet.getLong("id"))
+                .memberId(resultSet.getLong("memberId"))
+                .contents(resultSet.getString("contents"))
+                .createdDate(resultSet.getObject("createdDate", LocalDate.class))
+                .createdAt(resultSet.getObject("createdAt", LocalDateTime.class))
+                .build();
+    static final RowMapper<DailyPostCount> DAILY_POST_COUNT_MAPPER = (ResultSet resultSet, int rowNum) ->
             new DailyPostCount(
                     resultSet.getLong("memberId")
                     , resultSet.getObject("createdDate", LocalDate.class)
@@ -42,9 +54,67 @@ public class PostRepository {
                 """, TABLE);
         //WHERE memberId = :memberId and createdDate between :firstDate and :lastDate
         var params =  new BeanPropertySqlParameterSource(request);
-        return namedParameterJdbcTemplate.query(sql, params, rowMapper);
+        return namedParameterJdbcTemplate.query(sql, params, DAILY_POST_COUNT_MAPPER);
 
 
+    }
+    public Page<Post> findAllByMemberId(Long memberId, Pageable pagable) {
+        var params = new MapSqlParameterSource().addValue("memberId", memberId)
+                .addValue("size", pagable.getPageSize())
+                .addValue("offset", pagable.getOffset());
+        var sql = String.format("""
+                SELECT *
+                FROM %s
+                WHERE memberId = :memberId
+                ORDER BY %s
+                LIMIT :size
+                OFFSET :offset
+                """, TABLE, PageHelper.orderBy(pagable.getSort()));
+
+        var posts = namedParameterJdbcTemplate.query(sql, params, ROW_MAPPER);
+        return new PageImpl(posts, pagable, getCount(memberId));
+
+    }
+
+    private Long getCount(Long memberId) {
+        var params = new MapSqlParameterSource().addValue("memberId", memberId);
+        var sql = String.format("""
+                SELECT COUNT(id)
+                FROM %s
+                WHERE memberId = :memberId
+                """, TABLE);
+        return namedParameterJdbcTemplate.queryForObject(sql, params, Long.class);
+    }
+
+    public List<Post> findAllByMemberIdAndOrderByIdDesc(Long memberId, int size) {
+        var params = new MapSqlParameterSource()
+                .addValue("memberId", memberId)
+                .addValue("size", size);
+        var sql = String.format("""
+                SELECT *
+                FROM %s
+                WHERE memberId = :memberId
+                ORDER BY id DESC
+                LIMIT :size
+                """, TABLE);
+        var posts = namedParameterJdbcTemplate.query(sql, params, ROW_MAPPER);
+        return namedParameterJdbcTemplate.query(sql, params, ROW_MAPPER);
+    }
+
+    public List<Post> findAllByLessThenIdAndMemberIdAndOrderByIdDesc(Long id, Long memberId, int size) {
+        var params = new MapSqlParameterSource()
+                .addValue("memberId", memberId)
+                .addValue("id", id)
+                .addValue("size", size);
+        var sql = String.format("""
+                SELECT *
+                FROM %s
+                WHERE memberId = :memberId and id < :id
+                ORDER BY id DESC
+                LIMIT :size
+                """, TABLE);
+        var posts = namedParameterJdbcTemplate.query(sql, params, ROW_MAPPER);
+        return namedParameterJdbcTemplate.query(sql, params, ROW_MAPPER);
     }
 
     public Post save(Post post) {
@@ -87,6 +157,7 @@ public class PostRepository {
                 .build();
 
     }
+
 
 
 }
