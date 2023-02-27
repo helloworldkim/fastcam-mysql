@@ -31,11 +31,16 @@ public class FollowRepository {
             .createdAt(resultSet.getObject("createdAt", LocalDateTime.class))
             .build();
 
-    public List<Follow> findByFromMemberId(Long fromMemberId) {
+    public List<Follow> findAllByFromMemberId(Long fromMemberId) {
         var sql = String.format("SELECT * FROM %s WHERE fromMemberId = :fromMemberId", TABLE);
         var params = new MapSqlParameterSource().addValue("fromMemberId", fromMemberId);
         return namedParameterJdbcTemplate.query(sql, params, rowMapper);
+    }
 
+    public List<Follow> findAllByToMemberId(Long toMemberId) {
+        var sql = String.format("SELECT * FROM %s WHERE toMemberId = :toMemberId", TABLE);
+        var params = new MapSqlParameterSource().addValue("toMemberId", toMemberId);
+        return namedParameterJdbcTemplate.query(sql, params, rowMapper);
     }
 
     public Follow save(Follow follow) {

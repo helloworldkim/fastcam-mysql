@@ -1,5 +1,6 @@
 package com.example.fastcampusmysql.controller;
 
+import com.example.fastcampusmysql.application.usecase.CreatePostUsecace;
 import com.example.fastcampusmysql.application.usecase.GetTimelinePostsUsecase;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostCount;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostCountRequest;
@@ -8,10 +9,9 @@ import com.example.fastcampusmysql.domain.post.entity.Post;
 import com.example.fastcampusmysql.domain.post.service.PostReadService;
 import com.example.fastcampusmysql.domain.post.service.PostWriteService;
 import com.example.fastcampusmysql.util.CursorRequest;
-import com.example.fastcampusmysql.util.PageCuorsor;
+import com.example.fastcampusmysql.util.PageCursor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,9 +26,11 @@ public class PostController {
     private final PostReadService postReadService;
     private final GetTimelinePostsUsecase getTimelinePostsUsecase;
 
+    private final CreatePostUsecace createPostUsecace;
+
     @PostMapping("")
     public Long register(PostCommand command) {
-        return postWriteService.create(command);
+        return createPostUsecace.execute(command);
     }
 
     @GetMapping("/daily-post-counts")
@@ -46,7 +48,7 @@ public class PostController {
 
 
     @GetMapping("/members/{memberId}/by-cursor")
-    public PageCuorsor<Post> getPostsByCursor(
+    public PageCursor<Post> getPostsByCursor(
             @PathVariable("memberId") Long memberId,
             CursorRequest cursorRequest
     ) {
@@ -54,11 +56,11 @@ public class PostController {
     }
 
     @GetMapping("/members/{memberId}/timeline")
-    public PageCuorsor<Post> getTimeline(
+    public PageCursor<Post> getTimeline(
             @PathVariable("memberId") Long memberId,
             CursorRequest cursorRequest
     ) {
-        return getTimelinePostsUsecase.excute(memberId, cursorRequest);
+        return getTimelinePostsUsecase.excuteByTimeline(memberId, cursorRequest);
     }
 
 }

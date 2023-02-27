@@ -2,9 +2,9 @@ package com.example.fastcampusmysql.util;
 
 import java.util.List;
 
-public record PageCuorsor<T>(
+public record PageCursor<T>(
     CursorRequest nextCursorRequest,
-    List<T> Body
+    List<T> body
 ){
 
 }

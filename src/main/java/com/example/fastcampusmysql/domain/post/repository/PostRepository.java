@@ -1,7 +1,6 @@
 package com.example.fastcampusmysql.domain.post.repository;
 
 
-import com.example.fastcampusmysql.util.PageCuorsor;
 import com.example.fastcampusmysql.util.PageHelper;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostCount;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostCountRequest;
@@ -97,7 +96,6 @@ public class PostRepository {
                 ORDER BY id DESC
                 LIMIT :size
                 """, TABLE);
-        var posts = namedParameterJdbcTemplate.query(sql, params, ROW_MAPPER);
         return namedParameterJdbcTemplate.query(sql, params, ROW_MAPPER);
     }
 
@@ -116,7 +114,21 @@ public class PostRepository {
                 ORDER BY id DESC
                 LIMIT :size
                 """, TABLE);
-        var posts = namedParameterJdbcTemplate.query(sql, params, ROW_MAPPER);
+        return namedParameterJdbcTemplate.query(sql, params, ROW_MAPPER);
+    }
+
+    public List<Post> findAllByInId(List<Long> ids) {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        var sql = String.format("""
+                SELECT *
+                FROM %s
+                WHERE id in (:ids)
+                """, TABLE);
+
+        var params = new MapSqlParameterSource()
+                .addValue("ids", ids);
         return namedParameterJdbcTemplate.query(sql, params, ROW_MAPPER);
     }
 
@@ -132,7 +144,6 @@ public class PostRepository {
                 ORDER BY id DESC
                 LIMIT :size
                 """, TABLE);
-        var posts = namedParameterJdbcTemplate.query(sql, params, ROW_MAPPER);
         return namedParameterJdbcTemplate.query(sql, params, ROW_MAPPER);
     }
 
