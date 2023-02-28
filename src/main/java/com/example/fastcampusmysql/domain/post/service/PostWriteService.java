@@ -24,6 +24,20 @@ public class PostWriteService {
     @Transactional
     public void likePost(Long postId) {
         var post = postRepository.findById(postId, true).orElseThrow();
+//        post.incrementLikeCount();
+//        postRepository.save(post);
+        postRepository.updateLikeCount(post.getId());
+    }
+
+    @Transactional
+    public void likePostByPessimisticLock(Long postId) {
+        var post = postRepository.findById(postId, true).orElseThrow();
+        post.incrementLikeCount();
+        postRepository.save(post);
+    }
+//    @Transactional
+    public void likePostByOptimisticLock(Long postId) {
+        var post = postRepository.findById(postId, false).orElseThrow();
         post.incrementLikeCount();
         postRepository.save(post);
     }

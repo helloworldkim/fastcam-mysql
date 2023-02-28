@@ -38,6 +38,7 @@ public class PostRepository {
                 .createdDate(resultSet.getObject("createdDate", LocalDate.class))
                 .createdAt(resultSet.getObject("createdAt", LocalDateTime.class))
                 .likeCount(resultSet.getLong("likeCount"))
+                .version(resultSet.getLong("version"))
             .build();
     static final RowMapper<DailyPostCount> DAILY_POST_COUNT_MAPPER = (ResultSet resultSet, int rowNum) ->
             new DailyPostCount(
@@ -231,12 +232,33 @@ public class PostRepository {
                     , createdDate = :createdDate
                     , likeCount = :likeCount
                     , createdAt = :createdAt
-                WHERE id = :id
+                    , version = :version + 1
+                WHERE id = :id and version = :version
                 """
                 , TABLE);
         SqlParameterSource params = new BeanPropertySqlParameterSource(post);
-        namedParameterJdbcTemplate.update(sql,params);
+        var updatedCount = namedParameterJdbcTemplate.update(sql, params);
+
+        if (updatedCount == 0) {
+            throw new RuntimeException("갱신실패");
+        }
+
         return post;
+    }
+
+    /**
+     * 만약 호출된 수 만큼 likeCount가 늘어날거라면 쿼리문내에서 likeCount를 1 증가시킨다.
+     * @param postId
+     */
+    public void updateLikeCount(Long postId) {
+        var sql = String.format("""
+                UPDATE %s set
+                    likeCount = likeCount + 1
+                WHERE id = :id
+                """
+                , TABLE);
+        SqlParameterSource params = new MapSqlParameterSource().addValue("id", postId);
+        namedParameterJdbcTemplate.update(sql,params);
     }
 
 

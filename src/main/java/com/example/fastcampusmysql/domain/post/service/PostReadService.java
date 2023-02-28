@@ -2,8 +2,10 @@ package com.example.fastcampusmysql.domain.post.service;
 
 import com.example.fastcampusmysql.domain.post.dto.DailyPostCount;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostCountRequest;
+import com.example.fastcampusmysql.domain.post.dto.PostDto;
 import com.example.fastcampusmysql.domain.post.entity.Post;
 import com.example.fastcampusmysql.domain.post.repository.PostRepository;
+import com.example.fastcampusmysql.domain.postlike.repository.PostlikeRepository;
 import com.example.fastcampusmysql.util.CursorRequest;
 import com.example.fastcampusmysql.util.PageCursor;
 import lombok.RequiredArgsConstructor;
@@ -12,19 +14,33 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
 public class PostReadService {
     private final PostRepository postRepository;
+    private final PostlikeRepository postlikeRepository;
 
     public List<DailyPostCount> getDailyPostCounts(DailyPostCountRequest reqeust) {
         return postRepository.groupByCreatedDate(reqeust);
     }
 
-    public Page<Post> getPosts(Long memberId, Pageable pageable) {
+    public Page<PostDto> getPosts(Long memberId, Pageable pageable) {
 
-        return postRepository.findAllByMemberId(memberId, pageable);
+        return postRepository.findAllByMemberId(memberId, pageable).map(this::toDto);
+    }
+    private PostDto  toDto(Post post) {
+        return new PostDto(
+                post.getId(),
+                post.getContents(),
+                post.getCreatedAt(),
+                postlikeRepository.count(post.getId()));
+
+    }
+
+    public Post getPost(Long postId) {
+        return postRepository.findById(postId, false).orElseThrow();
     }
 
     public PageCursor<Post> getPosts(Long memberId, CursorRequest cursorRequest) {

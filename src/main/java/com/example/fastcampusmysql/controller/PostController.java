@@ -1,10 +1,12 @@
 package com.example.fastcampusmysql.controller;
 
 import com.example.fastcampusmysql.application.usecase.CreatePostUsecace;
+import com.example.fastcampusmysql.application.usecase.CreatePostlikeUsecase;
 import com.example.fastcampusmysql.application.usecase.GetTimelinePostsUsecase;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostCount;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostCountRequest;
 import com.example.fastcampusmysql.domain.post.dto.PostCommand;
+import com.example.fastcampusmysql.domain.post.dto.PostDto;
 import com.example.fastcampusmysql.domain.post.entity.Post;
 import com.example.fastcampusmysql.domain.post.service.PostReadService;
 import com.example.fastcampusmysql.domain.post.service.PostWriteService;
@@ -25,8 +27,8 @@ public class PostController {
     private final PostWriteService postWriteService;
     private final PostReadService postReadService;
     private final GetTimelinePostsUsecase getTimelinePostsUsecase;
-
     private final CreatePostUsecace createPostUsecace;
+    private final CreatePostlikeUsecase createPostlikeUsecase;
 
     @PostMapping("")
     public Long register(PostCommand command) {
@@ -39,7 +41,7 @@ public class PostController {
     }
 
     @GetMapping("/members/{memberId}")
-    public Page<Post> getPosts(
+    public Page<PostDto> getPosts(
             @PathVariable("memberId") Long memberId,
             Pageable pagable
     ) {
@@ -62,10 +64,17 @@ public class PostController {
     ) {
         return getTimelinePostsUsecase.excuteByTimeline(memberId, cursorRequest);
     }
-    @PostMapping("/{postId}/like")
+    @PostMapping("/{postId}/like/v1")
     public void likePost(@PathVariable("postId") Long postId) {
-        postWriteService.likePost(postId);
+//        postWriteService.likePostByPessimisticLock(postId);
+        postWriteService.likePostByOptimisticLock(postId);
     }
+
+    @PostMapping("/{postId}/like/v2")
+    public void likePostV2(@PathVariable("postId") Long postId, @RequestParam Long memberId) {
+        createPostlikeUsecase.execute(postId, memberId);
+    }
+
 
 
 
