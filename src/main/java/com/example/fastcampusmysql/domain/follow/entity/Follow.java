@@ -1,23 +1,35 @@
 package com.example.fastcampusmysql.domain.follow.entity;
 
+import com.example.fastcampusmysql.domain.common.BaseEntity;
+import com.example.fastcampusmysql.domain.member.entity.Member;
+import com.fasterxml.jackson.databind.ser.Serializers;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import javax.persistence.*;
 import java.util.Objects;
 
 @Getter
-public class Follow {
-    private final Long id;
-    private final Long fromMemberId;
-    private final Long toMemberId;
-    private final LocalDateTime createdAt;
+@Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Follow extends BaseEntity {
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "from_member")
+    private Member fromMember;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "to_member")
+    private Member toMember;
 
     @Builder
-    public Follow(Long id, Long fromMemberId, Long toMemberId, LocalDateTime createdAt) {
+    public Follow(Long id, Member fromMember, Member toMember) {
         this.id = id;
-        this.fromMemberId = Objects.requireNonNull(fromMemberId);
-        this.toMemberId = Objects.requireNonNull(toMemberId);
-        this.createdAt = createdAt == null ? LocalDateTime.now() : createdAt;
+        this.fromMember = Objects.requireNonNull(fromMember);
+        this.toMember = Objects.requireNonNull(toMember);
     }
 }
