@@ -15,7 +15,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 public class MemberReadService {
-
     private final MemberRepository memberRepository;
     private final MemberNicknameHistoryRepository memberNicknameHistoryRepository;
 
@@ -47,7 +46,7 @@ public class MemberReadService {
     }
 
     public MemberNicknameHistoryDto toDto(MemberNicknameHistory history) {
-        return new MemberNicknameHistoryDto(history.getId(), history.getMemberId(), history.getNickname(), history.getCreatedAt());
+        return new MemberNicknameHistoryDto(history.getId(), history.getMember().getId(), history.getNickname());
     }
 
 }

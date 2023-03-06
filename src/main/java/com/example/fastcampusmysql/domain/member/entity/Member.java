@@ -1,42 +1,52 @@
 package com.example.fastcampusmysql.domain.member.entity;
 
+import com.example.fastcampusmysql.domain.common.BaseEntity;
+import com.example.fastcampusmysql.domain.member.dto.MemberDto;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.util.Assert;
 
+import javax.persistence.*;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Getter
-public class Member {
+@Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Member extends BaseEntity {
 
-    final private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "member_id")
+    private Long id;
     private String nickname;
-    final private String email;
-    final private LocalDate birthDay;
-    final private LocalDateTime createdAt;
-    final private static Long NAME_MAX_LENGTH = 10L;
+    private String email;
+    private LocalDate birthDay;
+    private static final Long NAME_MAX_LENGTH = 10L;
 
     @Builder
-    public Member(Long id, String nickname, String email, LocalDate birthDay, LocalDateTime createdAt) {
+    public Member(Long id, String nickname, String email, LocalDate birthDay) {
         this.id = id;
         this.email = Objects.requireNonNull(email);
         this.birthDay = Objects.requireNonNull(birthDay);
-
-        vaildateNickname(nickname);
+        validateNickname(nickname);
         this.nickname = Objects.requireNonNull(nickname);
 
-        this.createdAt = createdAt == null ? LocalDateTime.now() : createdAt;
     }
 
     public void changeNickname(String to) {
         Objects.requireNonNull(to);
-        vaildateNickname(to);
+        validateNickname(to);
         nickname = to;
     }
 
-    private void vaildateNickname(String nickname) {
+    private void validateNickname(String nickname) {
         Assert.isTrue(nickname.length() <= NAME_MAX_LENGTH, "최대 길이를 초과했습니다.");
+    }
+
+    public MemberDto toDto(Member member) {
+        return new MemberDto(member.getId(), member.getEmail(), member.getNickname(), member.getBirthDay());
     }
 }

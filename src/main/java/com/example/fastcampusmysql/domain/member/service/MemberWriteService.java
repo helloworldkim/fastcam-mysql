@@ -8,8 +8,6 @@ import com.example.fastcampusmysql.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-
 @Service
 @RequiredArgsConstructor
 public class MemberWriteService {
@@ -51,9 +49,8 @@ public class MemberWriteService {
     private void saveMemberNicknameHistory(Member member) {
 
         var history = MemberNicknameHistory.builder()
-                .memberId(member.getId())
+                .member(member)
                 .nickname(member.getNickname())
-                .createdAt(member.getCreatedAt())
                 .build();
 
         memberNicknameHistoryRepository.save(history);

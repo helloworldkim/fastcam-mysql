@@ -1,0 +1,35 @@
+#logging.level.org.springframework.jdbc.core = TRACE
+#spring.datasource.username=root
+#spring.datasource.url=jdbc:mysql://localhost:3306/sns?rewriteBatchedStatements=true&profileSQL=true&logger=Slf4JLogger&maxQuerySizeToLog=999999&characterEncoding=UTF-8&serverTimezone=Asia/Seoul
+#spring.datasource.url=jdbc:mysql://localhost:3306/sns?rewriteBatchedStatements=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul
+#spring.datasource.password=
+
+spring:
+  profiles:
+    active:
+      - dev
+  datasource:
+    url: jdbc:h2:mem:fastcom_mysql
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  h2:
+    console:
+      enabled: true
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        #        show_sql: true
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+        default_batch_fetch_size: 100
+
+
+
+logging:
+  level:
+    org.hibernate.SQL : debug
+    org.hibernate.type : trace
