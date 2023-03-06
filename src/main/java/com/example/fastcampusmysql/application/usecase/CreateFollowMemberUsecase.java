@@ -2,7 +2,6 @@ package com.example.fastcampusmysql.application.usecase;
 
 
 import com.example.fastcampusmysql.domain.follow.service.FollowWriteService;
-import com.example.fastcampusmysql.domain.member.dto.MemberDto;
 import com.example.fastcampusmysql.domain.member.service.MemberReadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +21,7 @@ public class CreateFollowMemberUsecase {
 
         var fromMember = memberReadService.getMember(fromMemberId);
         var toMember = memberReadService.getMember(toMemberId);
+        // TODO: 동일한 조건으로 중복 Follow 체크 필요
         followWriteService.create(fromMember, toMember);
 
     }
