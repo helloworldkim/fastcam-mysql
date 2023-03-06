@@ -15,6 +15,7 @@ import com.example.fastcampusmysql.util.PageCursor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,16 +46,16 @@ public class PostController {
             @PathVariable("memberId") Long memberId,
             Pageable pagable
     ) {
-        return postReadService.getPosts(memberId, pagable);
+        return postReadService.getPostsByPage(memberId, pagable);
     }
 
 
     @GetMapping("/members/{memberId}/by-cursor")
-    public PageCursor<Post> getPostsByCursor(
+    public Slice<Post> getPostsByCursor(
             @PathVariable("memberId") Long memberId,
-            CursorRequest cursorRequest
+            Pageable pageable
     ) {
-        return postReadService.getPosts(memberId, cursorRequest);
+        return postReadService.getPostsBySlice(memberId, pageable);
     }
 
     @GetMapping("/members/{memberId}/timeline")
@@ -62,15 +63,19 @@ public class PostController {
             @PathVariable("memberId") Long memberId,
             CursorRequest cursorRequest
     ) {
-        return getTimelinePostsUsecase.excuteByTimeline(memberId, cursorRequest);
+//        return getTimelinePostsUsecase.excuteByTimeline(memberId, cursorRequest);
+        return null;
     }
     @PostMapping("/{postId}/like/v1")
-    public void likePost(@PathVariable("postId") Long postId) {
-//        postWriteService.likePostByPessimisticLock(postId);
+    public void likePostByOptimisticLock(@PathVariable("postId") Long postId) {
         postWriteService.likePostByOptimisticLock(postId);
     }
-
     @PostMapping("/{postId}/like/v2")
+    public void likePostByPessimisticLock(@PathVariable("postId") Long postId) {
+        postWriteService.likePostByPessimisticLock(postId);
+    }
+
+    @PostMapping("/{postId}/like/v3")
     public void likePostV2(@PathVariable("postId") Long postId, @RequestParam Long memberId) {
         createPostlikeUsecase.execute(postId, memberId);
     }

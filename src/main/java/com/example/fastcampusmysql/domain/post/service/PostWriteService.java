@@ -1,7 +1,10 @@
 package com.example.fastcampusmysql.domain.post.service;
 
+import com.example.fastcampusmysql.domain.member.entity.Member;
+import com.example.fastcampusmysql.domain.member.repository.MemberRepository;
 import com.example.fastcampusmysql.domain.post.entity.Post;
 import com.example.fastcampusmysql.domain.post.dto.PostCommand;
+import com.example.fastcampusmysql.domain.post.repository.PostJdbcRepository;
 import com.example.fastcampusmysql.domain.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -9,37 +12,28 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class PostWriteService {
-
-    final private PostRepository postRepository;
+    private final PostRepository postRepository;
+    private final MemberRepository memberRepository;
 
     public Long create(PostCommand command) {
-        var post = Post.builder().memberId(command.memberId())
+        Member member = memberRepository.findById(command.memberId()).orElseThrow();
+        var post = Post.builder()
+                .member(member)
                 .contents(command.contents())
                 .build();
 
         return postRepository.save(post).getId();
     }
 
-    @Transactional
-    public void likePost(Long postId) {
-        var post = postRepository.findById(postId, true).orElseThrow();
-//        post.incrementLikeCount();
-//        postRepository.save(post);
-        postRepository.updateLikeCount(post.getId());
-    }
-
-    @Transactional
     public void likePostByPessimisticLock(Long postId) {
-        var post = postRepository.findById(postId, true).orElseThrow();
+        var post = postRepository.findByIdWithPessimisticLock(postId).orElseThrow();
         post.incrementLikeCount();
-        postRepository.save(post);
     }
-//    @Transactional
     public void likePostByOptimisticLock(Long postId) {
-        var post = postRepository.findById(postId, false).orElseThrow();
+        var post = postRepository.findByIdWithOptimisticLock(postId).orElseThrow();
         post.incrementLikeCount();
-        postRepository.save(post);
     }
 
 }

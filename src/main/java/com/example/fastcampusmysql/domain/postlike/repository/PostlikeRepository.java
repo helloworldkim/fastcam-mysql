@@ -14,7 +14,6 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Repository
 @RequiredArgsConstructor

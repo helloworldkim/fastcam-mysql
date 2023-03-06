@@ -22,7 +22,7 @@ public class CreatePostUsecace {
         var postId = postWriteService.create(postCommand);
         var followerMemberIds = followReadService.getFollowers(postCommand.memberId())
                 .stream()
-                .map(Follow::getFromMemberId)
+                .map(follow -> {return follow.getFromMember().getId();})
                 .toList();
 
         timelineWriteService.deliveryToTimeline(postId, followerMemberIds);

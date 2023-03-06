@@ -1,32 +1,38 @@
 package com.example.fastcampusmysql.domain.post.entity;
 
+import com.example.fastcampusmysql.domain.common.BaseEntity;
+import com.example.fastcampusmysql.domain.member.entity.Member;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import javax.persistence.*;
 import java.util.Objects;
 
 @Getter
-public class Post {
+@Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Post extends BaseEntity {
 
-    private final Long id;
-    private final Long memberId;
-    private final String contents;
-    private final LocalDate createdDate;
+    @Id
+    @GeneratedValue
+    private Long id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private Member member;
+    private String contents;
     private Long likeCount;
+    @Version
     private Long version;
-    private final LocalDateTime createdAt;
 
     @Builder
-    public Post(Long id, Long memberId, String contents, LocalDate createdDate, Long likeCount, Long version, LocalDateTime createdAt) {
+    public Post(Long id, Member member, String contents, Long likeCount, Long version) {
         this.id = id;
-        this.memberId = Objects.requireNonNull(memberId);
+        this.member = Objects.requireNonNull(member);
         this.contents = Objects.requireNonNull(contents);
-        this.createdDate = createdDate == null ? LocalDate.now() : createdDate;
         this.likeCount = likeCount == null ? 0 : likeCount;
         this.version = version == null ? 0 : version;
-        this.createdAt = createdAt == null ? LocalDateTime.now() : createdAt;
     }
 
     public void incrementLikeCount() {
